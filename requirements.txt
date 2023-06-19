@@ -1,0 +1,4 @@
+nmeasim~=1.1.0.0
+pynmea2~=1.19.0
+loguru~=0.7.0
+requests~=2.31.0

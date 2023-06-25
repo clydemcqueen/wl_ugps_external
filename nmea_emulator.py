@@ -26,7 +26,7 @@ def main():
     sim = Simulator()
     with sim.lock:
         # Can re-order or drop some
-        sim.gps.output = ('GGA', 'HDM')
+        sim.gps.output = ('GGA', 'HDM', 'HDT')
         sim.gps.num_sats = 14
         sim.gps.lat = 47.6075779801547
         sim.gps.lon = -122.34390446166833
@@ -53,10 +53,11 @@ def main():
     try:
 
         while True:
-            gga_str, hdm_str = list(sim.get_output(1))
-            print(f'Sending "{gga_str}" and "{hdm_str}"')
+            gga_str, hdm_str, hdt_str = list(sim.get_output(1))
+            print(f'Sending "{gga_str}", "{hdm_str}", "{hdt_str}"')
             sock.sendto(str.encode(gga_str), (args.ip, args.port))
             sock.sendto(str.encode(hdm_str), (args.ip, args.port))
+            sock.sendto(str.encode(hdt_str), (args.ip, args.port))
             time.sleep(1)
 
     except KeyboardInterrupt:

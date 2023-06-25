@@ -117,9 +117,9 @@ class SocketThread(threading.Thread):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--udp_ip', type=str, default='127.0.0.1', help='listen on this IP address')
-    parser.add_argument('--udp_port', type=int, default='27000', help='listen on this port')
-    parser.add_argument('--g2_url', type=str, default='https://demo.waterlinked.com', help='G2 url')
+    parser.add_argument('--udp-ip', type=str, default='127.0.0.1', help='listen on this IP address')
+    parser.add_argument('--udp-port', type=int, default='27000', help='listen on this port')
+    parser.add_argument('--g2-url', type=str, default='https://demo.waterlinked.com', help='G2 url')
     parser.add_argument('--rate', type=float, default='2.0', help='sent to G2 at this rate')
     parser.add_argument('--log', action="store_true", help="save output in a log")
     args = parser.parse_args()

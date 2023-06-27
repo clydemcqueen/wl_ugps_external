@@ -120,14 +120,12 @@ def main():
     parser.add_argument('--udp-ip', type=str, default='127.0.0.1', help='listen on this IP address')
     parser.add_argument('--udp-port', type=int, default='27000', help='listen on this port')
     parser.add_argument('--g2-url', type=str, default='https://demo.waterlinked.com', help='G2 url')
-    parser.add_argument('--rate', type=float, default='2.0', help='sent to G2 at this rate')
+    parser.add_argument('--rate', type=float, default='2.0', help='sent to G2 at this rate, 0 means do not send')
     parser.add_argument('--log', action="store_true", help="save output in a log")
     args = parser.parse_args()
 
     if args.log:
         logger.add("log_{time}.txt")
-
-    period = 1.0 / args.rate
 
     # Keep track of the boat's position
     topside_position = TopsidePosition()
@@ -140,26 +138,38 @@ def main():
     sock_thread = SocketThread(sock, args.udp_ip, args.udp_port, topside_position)
     sock_thread.start()
 
-    # Run until interrupted
-    try:
-        # Get connection to the G2 topside box
-        ugps = UgpsConnection(host=args.g2_url)
-        ugps.wait_for_connection()
+    if args.rate > 0:
+        try:
+            # Get connection to the G2 topside box
+            ugps = UgpsConnection(host=args.g2_url)
+            ugps.wait_for_connection()
 
-        logger.info(f'Sending external position to {args.g2_url} at {args.rate} Hz')
-        logger.info('Press Ctrl-C to stop')
+            logger.info(f'Sending external position to {args.g2_url} at {args.rate} Hz')
+            logger.info('Press Ctrl-C to stop')
 
-        while True:
-            json = topside_position.get_json()
-            if json is not None:
-                logger.debug(json)
-                ugps.send_ugps_topside_position(json)
-            time.sleep(period)
+            while True:
+                json = topside_position.get_json()
+                if json is not None:
+                    logger.debug(json)
+                    ugps.send_ugps_topside_position(json)
+                time.sleep(1.0 / args.rate)
 
-    except KeyboardInterrupt:
-        logger.info('Ctrl-C detected, quitting')
-        sock.close()
-        sock_thread.join()
+        except KeyboardInterrupt:
+            logger.info('Ctrl-C detected, quitting')
+
+    else:
+        # Do not send. Just wait while logging packets.
+        try:
+            logger.info('Press Ctrl-C to stop')
+
+            while True:
+                time.sleep(1.0)
+
+        except KeyboardInterrupt:
+            logger.info('Ctrl-C detected, quitting')
+
+    sock.close()
+    sock_thread.join()
 
 
 if __name__ == '__main__':

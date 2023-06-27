@@ -59,11 +59,11 @@ class TopsidePosition:
                 logger.info(f'got GGA: {sentence.data}')
                 self.gps_received = True
 
-            self.fix_quality = sentence.data[5]
-            self.hdop = sentence.data[7]
+            self.fix_quality = int(sentence.data[5])
+            self.hdop = float(sentence.data[7])
             self.lat = sentence.latitude
             self.lon = sentence.longitude
-            self.numsats = sentence.data[6]
+            self.numsats = int(sentence.data[6])
 
     def recv_hdm(self, sentence):
         with self.lock:

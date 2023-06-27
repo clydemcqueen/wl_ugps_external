@@ -31,7 +31,7 @@ Sending "$GPGGA,150951.49,4736.4551,N,12220.6343,W,1,14,3.1,0.0,M,,M,,*61" and "
 
 Run the injector in terminal 2:
 ~~~
-$ python3 nmea_injector.py
+$ python3 nmea_injector.py --log
 2023-06-19 08:13:42.673 | INFO     | ugps_connection:wait_for_connection:41 - Scanning for Water Linked underwater GPS...
 2023-06-19 08:13:42.674 | INFO     | __main__:run:95 - Listening for NMEA messages on 127.0.0.1:10110
 2023-06-19 08:13:43.703 | INFO     | __main__:main:140 - Sending external position to https://demo.waterlinked.com at 2.0 Hz
@@ -43,4 +43,30 @@ $ python3 nmea_injector.py
 ...
 ~~~
 
-Note that the https://demo.waterlinked.com will reject the PUT requests, you'll need a real G2 box for a full test.
+There's a tool to summarize the messages received:
+~~~
+$ message_summary.py *.txt
+Processing 18 files
+-------------------
+log_2023-06-26_09-28-51_799743.txt
+2129 sentences received in 109 seconds
+Type    Count     Hz  Description
+$YDDBS    109   1.00  Depth below surface
+$YDDBT    109   1.00  Depth below transducer
+$YDDPT    217   1.99  Depth of water
+$YDGGA      0   0.00  Global positioning system fix data
+$YDGLL    109   1.00  Geographic position lat/lon
+$YDGRS     67   0.61  GPS range residuals
+$YDGSA    108   0.99  GPS DOP and active satellites
+$YDGSV    324   2.97  Satellites in view
+$YDHDG    217   1.99  Heading, deviation and variation
+$YDHDM      0   0.00  Heading, magnetic
+$YDHDT    109   1.00  Heading, true
+$YDMDA    108   0.99  Meteorological composite
+$YDMTW    109   1.00  Mean temperature of water
+$YDRMC    109   1.00  Recommended minimum navigation information
+$YDROT    109   1.00  Rate of turn
+$YDVTG    217   1.99  Track made good and ground speed
+$YDZDA    108   0.99  Time and date
+...
+~~~

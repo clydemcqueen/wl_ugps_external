@@ -35,14 +35,23 @@ class TopsidePosition:
         self.orientation = 0
         self.sog = 0
 
-    def recv_sentence(self, data):
-        sentence = pynmea2.parse(data.decode())
-        if sentence.sentence_type == 'GGA':
-            self.recv_gga(sentence)
-        elif sentence.sentence_type == 'HDM':
-            self.recv_hdm(sentence)
-        else:
-            logger.debug(f'ignoring {sentence}')
+    def recv_packet(self, packet):
+        """
+        Packet format is:
+        <sentence><cr><lf><sentence><cr><lf><sentence><cr><lf>...
+        """
+        sentence_strs = packet.decode().split('\r\n')
+        for sentence_str in sentence_strs:
+            if sentence_str == '':
+                continue
+
+            sentence = pynmea2.parse(sentence_str)
+            logger.debug(sentence)
+
+            if sentence.sentence_type == 'GGA':
+                self.recv_gga(sentence)
+            elif sentence.sentence_type == 'HDM':
+                self.recv_hdm(sentence)
 
     def recv_gga(self, sentence):
         with self.lock:
@@ -104,8 +113,8 @@ class SocketThread(threading.Thread):
 
         while True:
             try:
-                data, addr = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
-                self.topside_position.recv_sentence(data)
+                packet, _ = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
+                self.topside_position.recv_packet(packet)
 
             except socket.timeout:
                 continue

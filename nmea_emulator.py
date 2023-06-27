@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Send fake NMEA 0183 GGA and HDT sentences to a UDP port.
+Send fake NMEA 0183 GGA, HDM and HDT sentences to a UDP port.
 """
 
 import argparse
@@ -11,6 +11,15 @@ from datetime import datetime
 
 from nmeasim.models import TZ_LOCAL
 from nmeasim.simulator import Simulator
+
+
+def sentences_to_packet(sentences: list[str]) -> bytes:
+    """
+    Packet format should be:
+    <sentence><cr><lf><sentence><cr><lf><sentence><cr><lf>...
+    Reference: https://stripydog.blogspot.com/2015/03/nmea-0183-over-ip-unwritten-rules-for.html
+    """
+    return ('\r\n'.join(sentences) + '\r\n').encode()
 
 
 def main():
@@ -55,9 +64,8 @@ def main():
         while True:
             gga_str, hdm_str, hdt_str = list(sim.get_output(1))
             print(f'Sending "{gga_str}", "{hdm_str}", "{hdt_str}"')
-            sock.sendto(str.encode(gga_str), (args.ip, args.port))
-            sock.sendto(str.encode(hdm_str), (args.ip, args.port))
-            sock.sendto(str.encode(hdt_str), (args.ip, args.port))
+            packet = sentences_to_packet([gga_str, hdm_str, hdt_str])
+            sock.sendto(packet, (args.ip, args.port))
             time.sleep(1)
 
     except KeyboardInterrupt:

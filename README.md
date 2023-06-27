@@ -20,7 +20,7 @@ Run the [nmea_injector](nmea_injector.py) script on the topside computer.
 Run the NMEA emulator in terminal 1:
 ~~~
 $ python3 nmea_emulator.py 
-Sending packets to 127.0.0.1:27000
+Sending packets to 127.0.0.1:10110
 Press Ctrl-C to stop
 Sending "$GPGGA,150948.49,4736.4547,N,12220.6343,W,1,14,3.1,0.0,M,,M,,*6E" and "$GPHDM,105.3,M*32"
 Sending "$GPGGA,150949.49,4736.4548,N,12220.6343,W,1,14,3.1,0.0,M,,M,,*60" and "$GPHDM,105.3,M*32"
@@ -33,7 +33,7 @@ Run the injector in terminal 2:
 ~~~
 $ python3 nmea_injector.py
 2023-06-19 08:13:42.673 | INFO     | ugps_connection:wait_for_connection:41 - Scanning for Water Linked underwater GPS...
-2023-06-19 08:13:42.674 | INFO     | __main__:run:95 - Listening for NMEA messages on 127.0.0.1:27000
+2023-06-19 08:13:42.674 | INFO     | __main__:run:95 - Listening for NMEA messages on 127.0.0.1:10110
 2023-06-19 08:13:43.703 | INFO     | __main__:main:140 - Sending external position to https://demo.waterlinked.com at 2.0 Hz
 2023-06-19 08:13:43.704 | INFO     | __main__:main:141 - Press Ctrl-C to stop
 2023-06-19 08:15:10.464 | INFO     | __main__:recv_gga:46 - got GGA: ['151510.46', '4736.4547', 'N', '12220.6343', 'W', '1', '14', '3.1', '0.0', 'M', '', 'M', '', '']

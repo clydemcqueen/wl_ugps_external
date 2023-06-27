@@ -25,7 +25,7 @@ def sentences_to_packet(sentences: list[str]) -> bytes:
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--ip', type=str, default='127.0.0.1', help='target IP address')
-    parser.add_argument('--port', type=int, default='27000', help='target port')
+    parser.add_argument('--port', type=int, default='10110', help='target port')
     args = parser.parse_args()
 
     print(f'Sending packets to {args.ip}:{args.port}')

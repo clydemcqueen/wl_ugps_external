@@ -15,9 +15,9 @@ Configure the G2 to use an external position.
 
 Run the [nmea_injector](nmea_injector.py) script on the topside computer.
 
-## Testing
+## Testing with the software emulator
 
-Run the NMEA emulator in terminal 1:
+Run the [NMEA emulator](nmea_emulator.py) in terminal 1:
 ~~~
 $ python3 nmea_emulator.py 
 Sending packets to 127.0.0.1:10110
@@ -29,7 +29,7 @@ Sending "$GPGGA,150951.49,4736.4551,N,12220.6343,W,1,14,3.1,0.0,M,,M,,*61" and "
 ...
 ~~~
 
-Run the injector in terminal 2:
+Run the [injector](nmea_injector.py) in terminal 2:
 ~~~
 $ python3 nmea_injector.py --log
 2023-06-19 08:13:42.673 | INFO     | ugps_connection:wait_for_connection:41 - Scanning for Water Linked underwater GPS...
@@ -43,7 +43,11 @@ $ python3 nmea_injector.py --log
 ...
 ~~~
 
-There's a tool to summarize the messages received:
+## Test results: add a YDEN gateway to a NMEA 2000 network
+
+A team from the Seattle Aquarium successfully tested the injector on a vessel with an NMEA 2000 network and a YDEN Ethernet gateway.
+
+These were the messages that we saw on the network:
 ~~~
 $ message_summary.py *.txt
 Processing 18 files
@@ -70,3 +74,19 @@ $YDVTG    217   1.99  Track made good and ground speed
 $YDZDA    108   0.99  Time and date
 ...
 ~~~
+
+The injector sent the heading and GPS position to the G2 box at 1Hz.
+
+We used a [logging tool](https://github.com/clydemcqueen/ardusub_log_tools/blob/main/wl_ugps_logger.py) to poll and log
+the position of the G2 box and the U1, and used a [mapping tool](https://github.com/clydemcqueen/ardusub_log_tools/blob/main/wl_ugps_process.py)
+to build maps of the results.
+
+### Caveats
+
+* The G2 box still needs a GPS fix to synchronize clocks
+
+### Open questions / future work
+
+* How fast can we call /api/v/external/master? Can we inject external readings at 20Hz?
+* The APIs position/acoustic/raw and position/acoustic/filtered returned identical results. Why?
+* We'd like to move this to a BlueOS extension, or add it to the [existing WL UGPS extension](https://github.com/waterlinked/blueos-ugps-extension/issues/2)

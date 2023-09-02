@@ -9,27 +9,33 @@ import re
 from datetime import datetime
 
 
-# Used to pre-seed the list of messages
 # Type descriptions are from https://gpsd.gitlab.io/gpsd/NMEA.html
-EXPECTED_MESSAGES = {
-    '$YDDBS': 'Depth below surface',
-    '$YDDBT': 'Depth below transducer',
-    '$YDDPT': 'Depth of water',
-    '$YDGLL': 'Geographic position lat/lon',
-    '$YDGRS': 'GPS range residuals',
-    '$YDGSA': 'GPS DOP and active satellites',
-    '$YDGSV': 'Satellites in view',
-    '$YDHDG': 'Heading, deviation and variation',
-    '$YDHDM': 'Heading, magnetic',
-    '$YDHDT': 'Heading, true',
-    '$YDGGA': 'Global positioning system fix data',
-    '$YDMDA': 'Meteorological composite',
-    '$YDMTW': 'Mean temperature of water',
-    '$YDRMC': 'Recommended minimum navigation information',
-    '$YDROT': 'Rate of turn',
-    '$YDVTG': 'Track made good and ground speed',
-    '$YDZDA': 'Time and date',
+MESSAGE_DESCRIPTIONS = {
+    'DBS': 'Depth below surface',
+    'DBT': 'Depth below transducer',
+    'DPT': 'Depth of water',
+    'GLL': 'Geographic position lat/lon',
+    'GRS': 'GPS range residuals',
+    'GSA': 'GPS DOP and active satellites',
+    'GSV': 'Satellites in view',
+    'HDG': 'Heading, deviation and variation',
+    'HDM': 'Heading, magnetic',
+    'HDT': 'Heading, true',
+    'GGA': 'Global positioning system fix data',
+    'MDA': 'Meteorological composite',
+    'MTW': 'Mean temperature of water',
+    'RMC': 'Recommended minimum navigation information',
+    'ROT': 'Rate of turn',
+    'VTG': 'Track made good and ground speed',
+    'ZDA': 'Time and date',
 }
+
+
+def get_description(sentence_type: str) -> str:
+    for suffix, description in MESSAGE_DESCRIPTIONS.items():
+        if sentence_type.endswith(suffix):
+            return description
+    return "Unknown"
 
 
 def get_timestamp(line: str):
@@ -48,10 +54,8 @@ def process(filename: str):
     # Count messages
     total = 0
 
-    # Count per type. See the list of types (not required).
+    # Count per type.
     counts = {}
-    for expected in EXPECTED_MESSAGES.keys():
-        counts[expected] = 0
 
     # Get the first and last timestamp to compute duration and message rates
     start = get_timestamp(line)
@@ -63,9 +67,7 @@ def process(filename: str):
             total += 1
             sentence_type = match[0]
 
-            if sentence_type not in EXPECTED_MESSAGES:
-                print(f'new message: {sentence_type}')
-                EXPECTED_MESSAGES[sentence_type] = 'Unknown'
+            if sentence_type not in counts:
                 counts[sentence_type] = 0
 
             counts[sentence_type] += 1
@@ -76,8 +78,8 @@ def process(filename: str):
     print(f'{total} sentences received in {duration.seconds} seconds')
     if total > 0:
         print('Type    Count     Hz  Description')
-        for count_item in sorted(counts.items()):
-            print(f'{count_item[0] :6} {count_item[1] :6} {count_item[1] / duration.seconds :6.2f}  {EXPECTED_MESSAGES[count_item[0]]}')
+        for sentence_type, count in sorted(counts.items()):
+            print(f'{sentence_type :6} {count :6} {count / duration.seconds :6.2f}  {get_description(sentence_type)}')
 
 
 def main():

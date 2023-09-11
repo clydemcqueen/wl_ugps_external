@@ -2,6 +2,9 @@
 
 """
 Listen to a UDP port for NMEA 0183 GGA and HDT sentences and call /api/v1/external/master on the G2 topside box.
+
+TODO add example urls for field reference
+TODO format this docstring
 """
 
 import argparse
@@ -152,6 +155,7 @@ def main():
     sock_thread = SocketThread(sock, args.udp_ip, args.udp_port, topside_position)
     sock_thread.start()
 
+    # TODO also test for g2_url == None, and make this the default
     if args.rate > 0:
         try:
             # Get connection to the G2 topside box

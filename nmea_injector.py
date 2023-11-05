@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
 """
-Listen to a UDP port for NMEA 0183 GGA and HDM sentences and call /api/v1/external/master on the G2 topside box.
+Listen to a UDP port for NMEA 0183 GGA and HDT sentences and call /api/v1/external/master on the G2 topside box.
+
+TODO add example urls for field reference
+TODO format this docstring
 """
 
 import argparse
@@ -23,7 +26,7 @@ class TopsidePosition:
     def __init__(self):
         self.lock = threading.Lock()
         self.gps_received = False
-        self.hdm_received = False
+        self.hdt_received = False
 
         # Fields required to call /api/v/external/master
         self.cog = 0
@@ -50,8 +53,8 @@ class TopsidePosition:
 
             if sentence.sentence_type == 'GGA':
                 self.recv_gga(sentence)
-            elif sentence.sentence_type == 'HDM':
-                self.recv_hdm(sentence)
+            elif sentence.sentence_type == 'HDT':
+                self.recv_hdt(sentence)
 
     def recv_gga(self, sentence):
         with self.lock:
@@ -65,17 +68,17 @@ class TopsidePosition:
             self.lon = sentence.longitude
             self.numsats = int(sentence.data[6])
 
-    def recv_hdm(self, sentence):
+    def recv_hdt(self, sentence):
         with self.lock:
-            if not self.hdm_received:
-                logger.info(f'got HDM: {sentence.data}')
-                self.hdm_received = True
+            if not self.hdt_received:
+                logger.info(f'got HDT: {sentence.data}')
+                self.hdt_received = True
 
             self.orientation = float(sentence.data[0])
 
     def get_json(self) -> dict | None:
         with self.lock:
-            if self.gps_received and self.hdm_received:
+            if self.gps_received and self.hdt_received:
                 return {
                     'cog': self.cog,
                     'fix_quality': self.fix_quality,
@@ -126,11 +129,16 @@ class SocketThread(threading.Thread):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--udp-ip', type=str, default='127.0.0.1', help='listen on this IP address')
-    parser.add_argument('--udp-port', type=int, default='10110', help='listen on this port')
-    parser.add_argument('--g2-url', type=str, default='https://demo.waterlinked.com', help='G2 url')
-    parser.add_argument('--rate', type=float, default='2.0', help='sent to G2 at this rate, 0 means do not send')
-    parser.add_argument('--log', action="store_true", help="save output in a log")
+    parser.add_argument('--udp-ip', type=str, default='127.0.0.1',
+                        help='listen on this IP address, default 127.0.0.1')
+    parser.add_argument('--udp-port', type=int, default='6200',
+                        help='listen on this port, default 6200')
+    parser.add_argument('--g2-url', type=str, default='http://192.168.2.94',
+                        help='G2 url, default http://192.168.2.94')
+    parser.add_argument('--rate', type=float, default='2.0',
+                        help='sent to G2 at this rate, 0 means do not send, default 2')
+    parser.add_argument('--log', action="store_true",
+                        help="save output in a log")
     args = parser.parse_args()
 
     if args.log:
@@ -142,11 +150,12 @@ def main():
     # Create a UDP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    # The GGA and HDM messages may arrive from different sensors at different rates.
+    # The GGA and HDT messages may arrive from different sensors at different rates.
     # Run the UDP listener on a separate thread so that we can call the G2 API at a consistent rate.
     sock_thread = SocketThread(sock, args.udp_ip, args.udp_port, topside_position)
     sock_thread.start()
 
+    # TODO also test for g2_url == None, and make this the default
     if args.rate > 0:
         try:
             # Get connection to the G2 topside box

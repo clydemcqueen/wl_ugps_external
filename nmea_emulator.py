@@ -63,8 +63,10 @@ def main():
 
         while True:
             gga_str, hdm_str, hdt_str = list(sim.get_output(1))
-            print(f'Sending "{gga_str}", "{hdm_str}", "{hdt_str}"')
-            packet = sentences_to_packet([gga_str, hdm_str, hdt_str])
+            pashr1_str = '$PASHR,163029.000,158.09,T,-0.30,+0.31,+0.01,0.029,0.029,0.059,1,1*3B'
+            pashr2_str = '$PASHR,130533.620,0.311,T,-80.467,-1.395,0.25,0.066,0.067,0.215,2,3*12'
+            print(f'Sending "{gga_str}", "{hdm_str}", "{hdt_str}", "{pashr1_str}", "{pashr2_str}"')
+            packet = sentences_to_packet([gga_str, hdm_str, hdt_str, pashr1_str, pashr2_str])
             sock.sendto(packet, (args.ip, args.port))
             time.sleep(1)
 
